@@ -1,28 +1,51 @@
 using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class Clock : MonoBehaviour
 {
-    public Transform hourHand;
-    public Transform minuteHand;
-    public Transform secondHand;
+    public GameObject hourHand;
+    public GameObject minuteHand;
+    public GameObject secondHand;
+    private int previousSecond;
 
+    void Start()
+    {
+        // Initialize the last second with the current system second
+        previousSecond = DateTime.Now.Second;
+    }
 
-    // Update is called once per frame
     void Update()
     {
-        DateTime currentTime = DateTime.Now; // Get real-world time
+        // Continuously update the clock hands
+        SyncClockHands();
+    }
 
-        float hourAngle = (currentTime.Hour % 12) * 30f + (currentTime.Minute * 0.5f); // 360° / 12 hours
-        float minuteAngle = currentTime.Minute * 6f; // 360° / 60 minutes
-        float secondAngle = currentTime.Second * 6f; // 360° / 60 seconds
+    // Method to update the positions of the clock hands
+    private void SyncClockHands()
+    {
+        int currentSecond = DateTime.Now.Second;
 
-        hourHand.localRotation = Quaternion.Euler(0, 0, -hourAngle);
-        minuteHand.localRotation = Quaternion.Euler(0, 0, -minuteAngle);
+        if (currentSecond != previousSecond)
+        {
+            // Update the second hand rotation
+            float secondRotation = (currentSecond / 60f) * 360f;
+            secondHand.transform.rotation = Quaternion.Euler(secondRotation, 0, 0);
 
-        if (secondHand != null)
-            secondHand.localRotation = Quaternion.Euler(0, 0, -secondAngle);
+            // Update the minute hand rotation
+            int currentMinute = DateTime.Now.Minute;
+            float minuteRotation = (currentMinute / 60f) * 360f;
+            minuteHand.transform.rotation = Quaternion.Euler(minuteRotation, 0, 0);
+
+            // Update the hour hand rotation
+            int currentHour = DateTime.Now.Hour % 12;
+            float hourRotation = (currentHour + (currentMinute / 60f)) * 30f;
+            hourHand.transform.rotation = Quaternion.Euler(hourRotation, 0, 0);
+
+            // Store the current second to detect changes in the next frame
+            previousSecond = currentSecond;
+        }
     }
 }
+
